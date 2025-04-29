@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N-Sum Solver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-r from-blue-100 to-purple-100 flex justify-center items-start min-h-screen py-10">
+    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-2xl">
+        <h1 class="text-2xl font-semibold text-blue-600 text-center mb-6">N-Sum Solver</h1>
+        <div class="mb-4">
+            <label for="target" class="block text-gray-700 text-sm font-bold mb-2">Target Sum:</label>
+            <input type="number" id="target" name="target" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+        </div>
+        <div class="mb-6">
+            <label for="numbers" class="block text-gray-700 text-sm font-bold mb-2">List of Numbers (comma-separated or one per line):</label>
+            <textarea id="numbers" name="numbers" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+        </div>
+        <button onclick="findSum()" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Find Subset</button>
+        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-800 mb-3">Result:</h2>
+            <p id="subset" class="text-gray-700"></p>
+            <div id="allSubsets" class="mt-4">
+                <h3 class="text-md font-semibold text-gray-700 mb-2">All Subsets:</h3>
+                <ul id="subsetsList" class="list-none p-0"></ul>
+            </div>
+        </div>
+    </div>
+    <script>
+        function findSum() {
+            const target = parseFloat(document.getElementById("target").value);
+            const numbersText = document.getElementById("numbers").value;
+            const numbers = numbersText.split(/[\s,]+/).map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
+            const subsetDisplay = document.getElementById("subset");
+            const subsetsList = document.getElementById("subsetsList");
+            subsetsList.innerHTML = ''; // Clear previous results
+
+            if (numbers.length === 0) {
+                subsetDisplay.textContent = "Please enter a list of numbers.";
+                return;
+            }
+
+            // Function to generate all subsets
+            function getSubsets(array) {
+                const result = [];
+                for (let i = 0; i < (1 << array.length); i++) {
+                    const subset = [];
+                    for (let j = 0; j < array.length; j++) {
+                        if ((i >> j) & 1) {
+                            subset.push(array[j]);
+                        }
+                    }
+                    result.push(subset);
+                }
+                return result;
+            }
+
+            const allSubsets = getSubsets(numbers);
+            let minDiff = Infinity;
+            let closestSubset = [];
+
+            allSubsets.forEach(subset => {
+                const sum = subset.reduce((a, b) => a + b, 0);
+                const diff = Math.abs(sum - target);
+
+                const listItem = document.createElement("li");
+                listItem.textContent = `${subset.join(" + ")} = ${sum.toFixed(2)}`;
+
+                if (diff < minDiff) {
+                    minDiff = diff;
+                    closestSubset = subset;
+                    listItem.classList.add("font-semibold", "text-green-600"); // Highlight closest subset
+                }
+                subsetsList.appendChild(listItem);
+            });
+
+            if (closestSubset.length > 0) {
+                subsetDisplay.textContent = `Subset: ${closestSubset.join(" + ")} = ${closestSubset.reduce((a, b) => a + b, 0).toFixed(2)}${minDiff > 0 ?  ". Closest sum found." : "" }`;
+            } else {
+                subsetDisplay.textContent = "No subset found that sums to the target.";
+            }
+        }
+    </script>
+</body>
+</html>
