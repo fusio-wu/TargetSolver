@@ -29,64 +29,53 @@
         <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
             <h2 class="text-lg font-semibold text-gray-800 mb-3">Result:</h2>
             <p id="subset" class="text-gray-700"></p>
-            <div id="allSubsets" class="mt-4">
-                <h3 class="text-md font-semibold text-gray-700 mb-2">All Subsets:</h3>
-                <ul id="subsetsList" class="list-none p-0"></ul>
-            </div>
         </div>
     </div>
+
     <script>
         function findSum() {
             const target = parseFloat(document.getElementById("target").value);
             const numbersText = document.getElementById("numbers").value;
             const numbers = numbersText.split(/[\s,]+/).map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
             const subsetDisplay = document.getElementById("subset");
-            const subsetsList = document.getElementById("subsetsList");
-            subsetsList.innerHTML = ''; // Clear previous results
 
             if (numbers.length === 0) {
                 subsetDisplay.textContent = "Please enter a list of numbers.";
                 return;
             }
 
-            // Function to generate all subsets
-            function getSubsets(array) {
-                const result = [];
-                for (let i = 0; i < (1 << array.length); i++) {
-                    const subset = [];
-                    for (let j = 0; j < array.length; j++) {
-                        if ((i >> j) & 1) {
-                            subset.push(array[j]);
+            // Function to find all subsets that sum to the target
+            function findSubsets(array, targetSum) {
+                let results = [];
+
+                function backtrack(index, currentSum, currentSubset) {
+                    if (index === array.length) {
+                        if (currentSum === targetSum) {
+                            results.push([...currentSubset]); // Store a copy of the subset
                         }
+                        return;
                     }
-                    result.push(subset);
+
+                    // Include the current number
+                    currentSubset.push(array[index]);
+                    backtrack(index + 1, currentSum + array[index], currentSubset);
+                    currentSubset.pop(); // Backtrack: Remove the number to exclude it
+
+                    // Exclude the current number
+                    backtrack(index + 1, currentSum, currentSubset);
                 }
-                return result;
+
+                backtrack(0, 0, []);
+                return results;
             }
 
-            const allSubsets = getSubsets(numbers);
-            let minDiff = Infinity;
-            let closestSubset = [];
+            const validSubsets = findSubsets(numbers, target);
 
-            allSubsets.forEach(subset => {
-                const sum = subset.reduce((a, b) => a + b, 0);
-                const diff = Math.abs(sum - target);
-
-                const listItem = document.createElement("li");
-                listItem.textContent = `${subset.join(" + ")} = ${sum.toFixed(2)}`;
-
-                if (diff < minDiff) {
-                    minDiff = diff;
-                    closestSubset = subset;
-                    listItem.classList.add("font-semibold", "text-green-600"); // Highlight closest subset
-                }
-                subsetsList.appendChild(listItem);
-            });
-
-            if (closestSubset.length > 0) {
-                subsetDisplay.textContent = `Subset: ${closestSubset.join(" + ")} = ${closestSubset.reduce((a, b) => a + b, 0).toFixed(2)}${minDiff > 0 ?  ". Closest sum found." : "" }`;
+            if (validSubsets.length > 0) {
+                const resultText = validSubsets.map(subset => `${subset.join(" + ")} = ${target}`).join("<br>");
+                subsetDisplay.innerHTML = "Valid Subsets:<br>" + resultText;
             } else {
-                subsetDisplay.textContent = "No subset found that sums to the target.";
+                subsetDisplay.textContent = "No subsets found that sum to the target.";
             }
         }
     </script>
