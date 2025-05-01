@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>N-Sum Solver</title>
+    <title>N-Sum and Tip/Tax Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,20 +15,47 @@
     </style>
 </head>
 <body class="bg-gradient-to-r from-blue-100 to-purple-100 flex justify-center items-start min-h-screen py-10">
-    <div class="bg-white rounded-lg shadow-xl p-8 w-full max-w-2xl">
-        <h1 class="text-2xl font-semibold text-blue-600 text-center mb-6">N-Sum Solver</h1>
-        <div class="mb-4">
-            <label for="target" class="block text-gray-700 text-sm font-bold mb-2">Target Sum:</label>
-            <input type="number" id="target" name="target" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-        </div>
-        <div class="mb-6">
-            <label for="numbers" class="block text-gray-700 text-sm font-bold mb-2">List of Numbers (comma-separated or one per line):</label>
-            <textarea id="numbers" name="numbers" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
-        </div>
-        <button onclick="findSum()" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Find Subset</button>
-        <div id="result" class="mt-6 p-4 bg-gray-50 rounded-md border border-gray-200">
-            <h2 class="text-lg font-semibold text-gray-800 mb-3">Result:</h2>
-            <p id="subset" class="text-gray-700"></p>
+    <div class="w-full max-w-2xl">
+        <h1 class="text-2xl font-semibold text-blue-600 text-center mb-6">N-Sum and Tip/Tax Calculator</h1>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <section class="bg-white rounded-lg shadow-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">N-Sum Solver</h2>
+                <div class="mb-4">
+                    <label for="target" class="block text-gray-700 text-sm font-bold mb-2">Target Sum:</label>
+                    <input type="number" id="target" name="target" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-6">
+                    <label for="numbers" class="block text-gray-700 text-sm font-bold mb-2">List of Numbers (comma-separated or one per line):</label>
+                    <textarea id="numbers" name="numbers" rows="5" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></textarea>
+                </div>
+                <button onclick="findSum()" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4">Find Subset</button>
+                <div id="result" class="mt-2 p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Result:</h3>
+                    <p id="subset" class="text-gray-700"></p>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-lg shadow-xl p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Tip/Tax Calculator</h2>
+                <div class="mb-4">
+                    <label for="totalAmount" class="block text-gray-700 text-sm font-bold mb-2">Total Amount:</label>
+                    <input type="number" id="totalAmount" name="totalAmount" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-4">
+                    <label for="tipPercentage" class="block text-gray-700 text-sm font-bold mb-2">Tip Percentage (%):</label>
+                    <input type="number" id="tipPercentage" name="tipPercentage" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <div class="mb-6">
+                    <label for="taxPercentage" class="block text-gray-700 text-sm font-bold mb-2">Tax Percentage (%):</label>
+                    <input type="number" id="taxPercentage" name="taxPercentage" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                </div>
+                <button onclick="calculateOriginalAmount()" class="bg-gradient-to-r from-purple-400 to-pink-500 hover:from-purple-500 hover:to-pink-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full">Calculate Original Amount</button>
+                <div id="originalAmountResult" class="mt-2 p-4 bg-gray-50 rounded-md border border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Original Amount:</h3>
+                    <p id="originalAmount" class="text-gray-700"></p>
+                </div>
+            </section>
         </div>
     </div>
 
@@ -77,6 +104,26 @@
             } else {
                 subsetDisplay.textContent = "No subsets found that sum to the target.";
             }
+        }
+
+        function calculateOriginalAmount() {
+            const totalAmount = parseFloat(document.getElementById("totalAmount").value);
+            const tipPercentage = parseFloat(document.getElementById("tipPercentage").value);
+            const taxPercentage = parseFloat(document.getElementById("taxPercentage").value);
+            const originalAmountDisplay = document.getElementById("originalAmount");
+
+            if (isNaN(totalAmount) || isNaN(tipPercentage) || isNaN(taxPercentage)) {
+                originalAmountDisplay.textContent = "Please enter valid numbers for all fields.";
+                return;
+            }
+
+            if (totalAmount <= 0 || tipPercentage < 0 || taxPercentage < 0) {
+                originalAmountDisplay.textContent = "Please enter positive numbers.";
+                return;
+            }
+
+            const originalAmount = totalAmount / (1 + tipPercentage / 100 + taxPercentage / 100);
+            originalAmountDisplay.textContent = originalAmount.toFixed(2);
         }
     </script>
 </body>
