@@ -32,6 +32,12 @@
                 <button onclick="findSum()" class="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full mb-4">Find Subset</button>
                 <div id="result" class="mt-2 p-4 bg-gray-50 rounded-md border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-800 mb-2">Result:</h3>
+                    <div id="loading" class="hidden">
+                        <div class="flex items-center space-x-2">
+                            <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-500"></div>
+                            <span class="text-gray-600">Calculating...</span>
+                        </div>
+                    </div>
                     <p id="subset" class="text-gray-700"></p>
                 </div>
             </section>
@@ -65,45 +71,64 @@
             const numbersText = document.getElementById("numbers").value;
             const numbers = numbersText.split(/[\s,]+/).map(num => parseFloat(num.trim())).filter(num => !isNaN(num));
             const subsetDisplay = document.getElementById("subset");
+            const loadingElement = document.getElementById("loading");
 
             if (numbers.length === 0) {
                 subsetDisplay.textContent = "Please enter a list of numbers.";
                 return;
             }
 
-            // Function to find all subsets that sum to the target
-            function findSubsets(array, targetSum) {
-                let results = [];
+            // Show loading state
+            loadingElement.classList.remove("hidden");
+            subsetDisplay.textContent = "";
 
-                function backtrack(index, currentSum, currentSubset) {
-                    if (index === array.length) {
-                        if (currentSum === targetSum) {
-                            results.push([...currentSubset]); // Store a copy of the subset
+            // Use setTimeout to allow the UI to update before heavy computation
+            setTimeout(() => {
+                const startTime = performance.now();
+                
+                function findSubsetThatSumsToTarget(nums, target) {
+                    const scale = 100;
+                    const scaledNums = nums.map(n => Math.round(n * scale));
+                    const scaledTarget = Math.round(target * scale);
+
+                    const possibleSums = new Map(); // sum => path (list of numbers)
+                    possibleSums.set(0, []);
+
+                    for (const num of scaledNums) {
+                        const newEntries = new Map();
+
+                        for (const [sum, path] of possibleSums.entries()) {
+                            const newSum = sum + num;
+                            if (!possibleSums.has(newSum)) {
+                                newEntries.set(newSum, [...path, num]);
+                            }
                         }
-                        return;
+
+                        for (const [sum, path] of newEntries.entries()) {
+                            possibleSums.set(sum, path);
+                        }
                     }
 
-                    // Include the current number
-                    currentSubset.push(array[index]);
-                    backtrack(index + 1, currentSum + array[index], currentSubset);
-                    currentSubset.pop(); // Backtrack: Remove the number to exclude it
+                    const result = possibleSums.get(scaledTarget);
+                    if (!result) return null;
 
-                    // Exclude the current number
-                    backtrack(index + 1, currentSum, currentSubset);
+                    // Convert back to float
+                    return result.map(n => n / scale);
                 }
 
-                backtrack(0, 0, []);
-                return results;
-            }
+                const result = findSubsetThatSumsToTarget(numbers, target);
+                const endTime = performance.now();
+                const actualTime = (endTime - startTime) / 1000;
 
-            const validSubsets = findSubsets(numbers, target);
+                // Hide loading state
+                loadingElement.classList.add("hidden");
 
-            if (validSubsets.length > 0) {
-                const resultText = validSubsets.map(subset => `${subset.join(" + ")} = ${target}`).join("<br>");
-                subsetDisplay.innerHTML = "Valid Subsets:<br>" + resultText;
-            } else {
-                subsetDisplay.textContent = "No subsets found that sum to the target.";
-            }
+                if (result) {
+                    subsetDisplay.innerHTML = `Valid Subset: ${result.join(" + ")} = ${target}<br><span class="text-sm text-gray-500">(Computed in ${actualTime.toFixed(2)} seconds)</span>`;
+                } else {
+                    subsetDisplay.textContent = "No subset found that sums to the target.";
+                }
+            }, 100);
         }
 
         function calculateOriginalAmount() {
